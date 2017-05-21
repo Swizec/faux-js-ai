@@ -28,13 +28,15 @@ const Conditions = [
     code => !(run(code) instanceof Error),
     code => run(code) === 4,
     code => code !== "4",
-    code => code !== 4
+    code => code !== 4,
+    code => code.length < 10
 ];
 
 const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
 
-const MUTATE_FACTOR = 0.1,
-      MUTATE_LIKELIHOOD = 0.3;
+const MUTATE_FACTOR = 0.5,
+      MUTATE_LIKELIHOOD = 0.8,
+      BIGGEST_POPULATION = 1000;
 
 function randomChar() {
     return CHARACTER_SET.charAt(Math.floor(Math.random() * CHARACTER_SET.length));
@@ -65,8 +67,8 @@ function rank(population, fitness) {
         a = fitness(a, Conditions);
         b = fitness(b, Conditions);
 
-        if (a > b) return 1;
-        if (a < b) return -1;
+        if (a > b) return -1;
+        if (a < b) return 1;
         return 0;
     });
 
@@ -113,11 +115,12 @@ function* generation({ population, fitness, N }) {
 
         population = rank(population, fitness);
 
-        population = _.take(population, N);
+        population = _.take(population, BIGGEST_POPULATION);
 
         yield {
             fitness: fitness(population[0], Conditions),
-            code: population[0]
+            code: population[0],
+            fitnessLast: fitness(population[population.length-1], Conditions)
         };
     }
 }
@@ -128,5 +131,5 @@ let population = initialPopulation({ N: 50, memberLength: 50 }),
     newGen = generation({ population, fitness, N: 50 });
 
 for (let i = 0; i < 100; i++) {
-    console.log(newGen.next().value);
+   console.log(newGen.next().value);
 }
