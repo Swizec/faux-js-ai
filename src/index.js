@@ -1,6 +1,7 @@
 
 const _eval = require('eval');
 const _ = require('lodash');
+const corpusReader = require('./corpusReader');
 
 // We aim to maximize this value
 function fitness(code, conditions) {
@@ -32,7 +33,8 @@ const Conditions = [
     code => code.length < 10
 ];
 
-const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
+//const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
+const CHARACTER_SET = corpusReader();
 
 const MUTATE_FACTOR = 0.5,
       MUTATE_LIKELIHOOD = 0.8,
@@ -130,6 +132,8 @@ function* generation({ population, fitness, N }) {
 let population = initialPopulation({ N: 50, memberLength: 50 }),
     newGen = generation({ population, fitness, N: 50 });
 
-for (let i = 0; i < 100; i++) {
+/* for (let i = 0; i < 100; i++) {
    console.log(newGen.next().value);
-}
+   } */
+
+console.log(population);
