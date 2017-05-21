@@ -2,9 +2,10 @@
   "name": "faux-js-ai",
   "version": "0.0.1",
   "description": "A faux AI that writes JavaScript. You write the tests, AI makes them pass. Edit",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
