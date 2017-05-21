@@ -1,16 +1,23 @@
 
 const _eval = require('eval');
-
-import _ from 'lodash';
+const _ = require('lodash');
 
 // We aim to maximize this value
 function fitness(code, conditions) {
     const N = conditions.length,
-          fulfilled = conditions.map(condition => condition(_eval(code), code))
+          fulfilled = conditions.map(condition => condition(code))
                                 .filter(b => b)
                                 .length;
 
     return fulfilled/N;
+}
+
+function run(code) {
+    try {
+        return _eval(code)
+    }catch (e) {
+        return e;
+    }
 }
 
 // We want code that calculates 4
@@ -18,9 +25,10 @@ function fitness(code, conditions) {
 // Does not equal 4 as a string
 // Returns 4
 const Conditions = [
-    (result, code) => result === 4,
-    (result, code) => code !== "4",
-    (result, code) => code !== 4
+    code => !(run(code) instanceof Error),
+    code => run(code) === 4,
+    code => code !== "4",
+    code => code !== 4
 ];
 
 const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
@@ -111,4 +119,7 @@ function* generation({ population, fitness, N }) {
 
 
 
-let population = initialPopulation({ N: 50, memberLength: 50 });
+let population = initialPopulation({ N: 50, memberLength: 50 }),
+    newGen = generation({ population, fitness, N: 50 });
+
+console.log(newGen.next());
