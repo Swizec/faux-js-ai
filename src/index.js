@@ -84,7 +84,6 @@ function mutate(member) {
 }
 
 function breedPair(a, b) {
-    console.log(a, typeof a);
     a = a.trim();
     b = b.trim();
 
@@ -98,7 +97,7 @@ function breedPair(a, b) {
 }
 
 function breedPairs(pairs) {
-    return pairs.map(breedPair);
+    return pairs.map(([a, b]) => a && b ? breedPair(a, b) : a);
 }
 
 function* generation({ population, fitness, N }) {
@@ -114,7 +113,12 @@ function* generation({ population, fitness, N }) {
 
         population = rank(population, fitness);
 
-        yield _.take(population, N);
+        population = _.take(population, N);
+
+        yield {
+            fitness: fitness(population[0], Conditions),
+            code: population[0]
+        };
     }
 }
 
@@ -123,4 +127,6 @@ function* generation({ population, fitness, N }) {
 let population = initialPopulation({ N: 50, memberLength: 50 }),
     newGen = generation({ population, fitness, N: 50 });
 
-console.log(newGen.next());
+for (let i = 0; i < 100; i++) {
+    console.log(newGen.next().value);
+}
