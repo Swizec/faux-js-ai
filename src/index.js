@@ -84,6 +84,7 @@ function mutate(member) {
 }
 
 function breedPair(a, b) {
+    console.log(a, typeof a);
     a = a.trim();
     b = b.trim();
 
