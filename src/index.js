@@ -48,11 +48,16 @@ const Conditions = [
     {
         condition: code => code.length > 10 ? 10/code.length : 1,
         weight: 6
+    },
+    {
+        condition: code => code.length > 3,
+        weight: 5
     }
 ];
 
 //const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
 const CHARACTER_SET = corpusReader();
+//const CHARACTER_SET = "01234567890+-*/.      "
 
 const MUTATE_FACTOR = 0.5,
       MUTATE_LIKELIHOOD = 0.8,
@@ -60,6 +65,10 @@ const MUTATE_FACTOR = 0.5,
 
 function randomChar() {
     return CHARACTER_SET.charAt(Math.floor(Math.random() * CHARACTER_SET.length));
+}
+
+function randomUpTo(n) {
+    return Math.floor(Math.random()*n);
 }
 
 function memberMaker(memberLength) {
@@ -89,7 +98,7 @@ function rank(population, fitness) {
 
         if (a > b) return -1;
         if (a < b) return 1;
-        return Number(Math.random() > 0.5);
+        return 0;
     });
 
     return population;
@@ -109,13 +118,16 @@ function breedPair(a, b) {
     a = a.trim();
     b = b.trim();
 
-    let child = a.slice(0, a.length/2) + b.slice(b.length/2);
+    const Apivot = randomUpTo(a.length),
+          Bpivot = randomUpTo(b.length);
+
+    let child = a.slice(Apivot, Apivot+randomUpTo(a.length)) + b.slice(Bpivot, Bpivot+randomUpTo(b.length));
 
     if (Math.random() > MUTATE_LIKELIHOOD) {
         child = mutate(child);
     }
 
-    return child;
+    return child.trim();
 }
 
 function breedPairs(pairs) {
@@ -153,10 +165,7 @@ let population = initialPopulation({ N: 50, memberLength: 20 }),
     newGen = generation({ population, fitness, N: 50 });
 
 // Run for 100 epochs
-for (let i = 0; i < 50; i++) {
-    newGen.next();
+for (let i = 0; i < 10; i++) {
+    console.log(i);
+    console.log(newGen.next().value);
 }
-
-
-// See if we got the code
-console.log(newGen.next().value);
