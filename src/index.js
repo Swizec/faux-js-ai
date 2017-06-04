@@ -41,11 +41,10 @@ function pairingStrategy(type) {
 
 function* generation({ population, fitness, N }) {
     while (true) {
-        population = rank(population, fitness);
+        population = rank(population);
 
-        // pairwise breed top 50% of population
         population = population.concat(
-            breedPairs(pairingStrategy('top_half_pairs')(population))
+            breedPairs(pairingStrategy('top_30_superset')(population))
         );
 
         population = rank(population);

@@ -29,8 +29,8 @@ function breedPair(a, b) {
     const Apivot = randomUpTo(a.length),
           Bpivot = randomUpTo(b.length);
 
-    let child = [a.slice(Apivot, Apivot+randomUpTo(a.length)),
-                 b.slice(Bpivot, Bpivot+randomUpTo(b.length))].join("");
+    let child = [a.slice(Apivot, Apivot+randomUpTo(a.length-Apivot)),
+                 b.slice(Bpivot, Bpivot+randomUpTo(b.length-Bpivot))].join("");
 
     if (Math.random() > MUTATE_LIKELIHOOD) {
         child = mutate(child);

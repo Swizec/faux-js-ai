@@ -7,12 +7,12 @@ function randomChar() {
 
 //const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
 //const CHARACTER_SET = corpusReader();
-const CHARACTER_SET = "01234567890+-*/.      "
+const CHARACTER_SET = "01234567890+-*/."
 
 const MUTATE_FACTOR = 0.5,
       MUTATE_LIKELIHOOD = 0.8,
       BIGGEST_POPULATION = 200,
-      N_EPOCHS = 10;
+      N_EPOCHS = 50;
 
 module.exports = {
     CHARACTER_SET,
