@@ -1,75 +1,19 @@
 
 const _eval = require('eval');
 const _ = require('lodash');
-const corpusReader = require('./corpusReader');
 
-// We aim to maximize this value
-function fitness(code, conditions) {
-    const max = conditions.reduce((sum, { condition, weight }) => sum + weight,
-                                  0),
-          fit = conditions.map(({ condition, weight }) => Number(condition(code))*weight)
-                          .reduce((sum, fit) => sum + fit,
-                                  0);
+const PAIRING_STRATEGIES = require('./pairing');
+const breedPairs = require('./breeding');
+const { fitness, rank } = require('./fitness');
 
-    return fit/max;
-}
-
-function run(code) {
-    try {
-        return _eval(code)
-    }catch (e) {
-        return e;
-    }
-}
-
-// We want code that calculates 4
-// Conditions:
-// Syntactically correct
-// Does not equal 4 as a string
-// Returns 4
-// Shorter than 10 char
-const Conditions = [
-    {
-        condition: code => !(run(code) instanceof Error),
-        weight: 10
-    },
-    {
-        condition: code => run(code) === 4,
-        weight: 8
-    },
-    {
-        condition: code => code !== "4",
-        weight: 2
-    },
-    {
-        condition: code => code !== 4,
-        weight: 2
-    },
-    {
-        condition: code => code.length > 10 ? 10/code.length : 1,
-        weight: 6
-    },
-    {
-        condition: code => code.length > 3,
-        weight: 5
-    }
-];
-
-//const CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\"'\`~!@#$%^&*()+=_-[]{},<>:;?/\\ ";
-const CHARACTER_SET = corpusReader();
-//const CHARACTER_SET = "01234567890+-*/.      "
-
-const MUTATE_FACTOR = 0.5,
-      MUTATE_LIKELIHOOD = 0.8,
-      BIGGEST_POPULATION = 200;
-
-function randomChar() {
-    return CHARACTER_SET.charAt(Math.floor(Math.random() * CHARACTER_SET.length));
-}
-
-function randomUpTo(n) {
-    return Math.floor(Math.random()*n);
-}
+const {
+    CHARACTER_SET,
+    MUTATE_FACTOR,
+    MUTATE_LIKELIHOOD,
+    BIGGEST_POPULATION,
+    N_EPOCHS,
+    randomChar
+} = require('./config');
 
 function memberMaker(memberLength) {
     let member = new Array(memberLength);
@@ -91,47 +35,8 @@ function initialPopulation({ N, memberLength }) {
     return population;
 }
 
-function rank(population, fitness) {
-    population.sort((a, b) => {
-        a = fitness(a, Conditions);
-        b = fitness(b, Conditions);
-
-        if (a > b) return -1;
-        if (a < b) return 1;
-        return 0;
-    });
-
-    return population;
-}
-
-function mutate(member) {
-    const N = member.length*MUTATE_FACTOR;
-
-    for (let i = 0; i < Math.round(N); i++) {
-        member[Math.floor(Math.random()*member.length)] = randomChar();
-    }
-
-    return member;
-}
-
-function breedPair(a, b) {
-    a = a.trim();
-    b = b.trim();
-
-    const Apivot = randomUpTo(a.length),
-          Bpivot = randomUpTo(b.length);
-
-    let child = a.slice(Apivot, Apivot+randomUpTo(a.length)) + b.slice(Bpivot, Bpivot+randomUpTo(b.length));
-
-    if (Math.random() > MUTATE_LIKELIHOOD) {
-        child = mutate(child);
-    }
-
-    return child.trim();
-}
-
-function breedPairs(pairs) {
-    return pairs.map(([a, b]) => a && b ? breedPair(a, b) : a);
+function pairingStrategy(type) {
+    return PAIRING_STRATEGIES[type];
 }
 
 function* generation({ population, fitness, N }) {
@@ -140,19 +45,17 @@ function* generation({ population, fitness, N }) {
 
         // pairwise breed top 50% of population
         population = population.concat(
-            breedPairs(_.chunk(_.take(population,
-                                 population.length/2),
-                          2)
-            ));
+            breedPairs(pairingStrategy('top_half_pairs')(population))
+        );
 
-        population = rank(population, fitness);
+        population = rank(population);
 
         population = _.take(population, BIGGEST_POPULATION);
 
         yield {
-            fitness: fitness(population[0], Conditions),
+            fitness: fitness(population[0]),
             code: population[0],
-            fitnessLast: fitness(population[population.length-1], Conditions),
+            fitnessLast: fitness(population[population.length-1]),
             codeLast: population[population.length-1],
             size: population.length
         };
@@ -164,8 +67,8 @@ function* generation({ population, fitness, N }) {
 let population = initialPopulation({ N: 50, memberLength: 20 }),
     newGen = generation({ population, fitness, N: 50 });
 
-// Run for 100 epochs
-for (let i = 0; i < 10; i++) {
+// Run for N epochs
+for (let i = 0; i < N_EPOCHS; i++) {
     console.log(i);
     console.log(newGen.next().value);
 }
